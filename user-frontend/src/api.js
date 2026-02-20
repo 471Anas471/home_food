@@ -23,4 +23,23 @@ export const getUserOrders = (email) => api.get(`/orders/user/${email}`);
 export const getOrder = (id) => api.get(`/orders/${id}`);
 export const cancelOrder = (id) => api.patch(`/orders/${id}/cancel`);
 
+// Comments API
+export const createComment = (commentData) => {
+  return axios.post(`${API_URL}/comments`, commentData);
+};
+
+export const getOrderComments = (orderId) => {
+  return axios.get(`${API_URL}/comments/order/${orderId}`);
+};
+
+export const updateComment = (commentId, commentData) => {
+  return axios.patch(`${API_URL}/comments/${commentId}`, commentData);
+};
+
+export const deleteComment = (commentId, customerEmail) => {
+  return axios.delete(`${API_URL}/comments/${commentId}`, {
+    data: { customerEmail }
+  });
+};
+
 export default api;

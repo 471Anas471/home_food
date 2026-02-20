@@ -8,11 +8,16 @@ router.post('/', async (req, res) => {
   try {
     const { customerName, customerEmail, customerPhone, customerAddress, items, specialNotes } = req.body;
 
+    // Validate required fields
     if (!customerName || !customerEmail || !customerPhone || !customerAddress || !items || items.length === 0) {
-      return res.status(400).json({ message: 'Missing required fields' });
+      return res.status(400).json({ message: 'Missing required fields: customerName, customerEmail, customerPhone, customerAddress, items' });
     }
 
     const totalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+    if (typeof totalPrice !== 'number' || totalPrice <= 0) {
+      return res.status(400).json({ message: 'Invalid total price' });
+    }
 
     const order = new Order({
       customerName,
@@ -21,12 +26,14 @@ router.post('/', async (req, res) => {
       customerAddress,
       items,
       totalPrice,
-      specialNotes: specialNotes || ''
+      specialNotes: specialNotes || '',
+      status: 'Pending'
     });
 
     await order.save();
     res.status(201).json(order);
   } catch (error) {
+    console.error('Order creation error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

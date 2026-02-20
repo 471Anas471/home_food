@@ -5,17 +5,32 @@ function Cart({ items, onRemove, onQuantityChange, onCheckout, user }) {
   const [showCheckout, setShowCheckout] = useState(false);
   const [address, setAddress] = useState(user?.address || '');
   const [notes, setNotes] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  const [error, setError] = useState('');
 
   const totalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const handleCheckoutSubmit = (e) => {
     e.preventDefault();
-    if (!address.trim()) {
-      alert('Please enter delivery address');
+    setError('');
+
+    // Validation
+    if (!customerName.trim()) {
+      setError('Please enter your full name');
       return;
     }
-    onCheckout({ address: address.trim(), notes });
+    if (!address.trim()) {
+      setError('Please enter delivery address');
+      return;
+    }
+
+    onCheckout({ 
+      customerName: customerName.trim(),
+      address: address.trim(), 
+      notes 
+    });
     setShowCheckout(false);
+    setCustomerName('');
     setAddress('');
     setNotes('');
   };
@@ -46,15 +61,32 @@ function Cart({ items, onRemove, onQuantityChange, onCheckout, user }) {
               <h4>{item.name}</h4>
               <p className="price">EGP {item.price}</p>
               <div className="quantity-control">
-                <button onClick={() => onQuantityChange(index, item.quantity - 1)}>−</button>
+                <button 
+                  type="button"
+                  onClick={() => onQuantityChange(index, item.quantity - 1)}
+                  aria-label="Decrease quantity"
+                >
+                  −
+                </button>
                 <span>{item.quantity}</span>
-                <button onClick={() => onQuantityChange(index, item.quantity + 1)}>+</button>
+                <button 
+                  type="button"
+                  onClick={() => onQuantityChange(index, item.quantity + 1)}
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
               </div>
             </div>
             <div className="item-total">
               <p>EGP {(item.price * item.quantity).toFixed(2)}</p>
-              <button className="btn-remove" onClick={() => onRemove(index)}>
-                Remove
+              <button 
+                className="btn-remove" 
+                onClick={() => onRemove(index)}
+                type="button"
+                aria-label="Remove item"
+              >
+                ✕ Remove
               </button>
             </div>
           </div>
@@ -81,14 +113,33 @@ function Cart({ items, onRemove, onQuantityChange, onCheckout, user }) {
       </div>
 
       {!showCheckout ? (
-        <button className="btn-checkout" onClick={() => setShowCheckout(true)}>
+        <button 
+          className="btn-checkout" 
+          onClick={() => setShowCheckout(true)}
+          type="button"
+        >
           Proceed to Checkout
         </button>
       ) : (
         <form className="checkout-form" onSubmit={handleCheckoutSubmit}>
+          {error && <div className="error-message">⚠️ {error}</div>}
+
           <div className="form-group">
-            <label>Delivery Address</label>
+            <label htmlFor="customerName">Full Name *</label>
+            <input
+              id="customerName"
+              type="text"
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+              placeholder="Enter your full name"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="address">Delivery Address *</label>
             <textarea
+              id="address"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               placeholder="Enter your delivery address"
@@ -98,8 +149,9 @@ function Cart({ items, onRemove, onQuantityChange, onCheckout, user }) {
           </div>
 
           <div className="form-group">
-            <label>Special Notes (Optional)</label>
+            <label htmlFor="notes">Special Notes (Optional)</label>
             <textarea
+              id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Any special requests or instructions?"

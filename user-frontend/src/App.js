@@ -81,9 +81,10 @@ function App() {
       const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
       const orderData = {
-        userEmail: user.email,
-        userPhone: user.phone,
-        userAddress: checkoutData.address || user.address,
+        customerName: checkoutData.customerName,
+        customerEmail: user.email,
+        customerPhone: user.phone,
+        customerAddress: checkoutData.address || user.address,
         items: cartItems.map(item => ({
           itemId: item._id,
           name: item.name,
@@ -91,17 +92,18 @@ function App() {
           quantity: item.quantity
         })),
         totalPrice,
+        specialNotes: checkoutData.notes,
         paymentMethod: 'cash_on_delivery'
       };
 
       const response = await createOrder(orderData);
       setCartItems([]);
-      setUserOrders([...userOrders, response.data.order]);
+      setUserOrders([...userOrders, response.data]);
       setShowOrderTracker(true);
-      alert('Order placed successfully! Order ID: ' + response.data.order._id);
+      alert('✅ Order placed successfully! Order ID: ' + response.data._id);
     } catch (error) {
       console.error('Error placing order:', error);
-      alert('Failed to place order. Please try again.');
+      alert('❌ Failed to place order: ' + (error.response?.data?.message || error.message));
     }
   };
 
